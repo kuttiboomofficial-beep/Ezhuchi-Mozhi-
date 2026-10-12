@@ -40,7 +40,7 @@ private val quoteList = listOf(
     Quote("பிரிவு முடிவல்ல; சில நேரம் அது நம்மை நமக்கே திருப்பித் தரும்.", "காதல் தோல்வி"),
     Quote("உன் முயற்சி அமைதியாக இருக்கட்டும்; வெற்றி பேசட்டும்.", "தன்னம்பிக்கை"),
     Quote("சிறிய மகிழ்ச்சிகளையும் ரசிக்கத் தெரிந்தால் வாழ்க்கை அழகாகும்.", "வாழ்க்கை")
-)
+) + extraQuotes
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
