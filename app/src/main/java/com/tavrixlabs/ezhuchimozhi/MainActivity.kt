@@ -1,12 +1,15 @@
+
 package com.tavrixlabs.ezhuchimozhi
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -42,12 +45,21 @@ private val quoteList = listOf(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { EzhuchiApp(onShare = { text ->
-            startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, text)
-            }, "கவிதையை பகிரவும்"))
-        }) }
+        setContent {
+            EzhuchiApp(
+                onShare = { text ->
+                    startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, text)
+                            },
+                            "கவிதையை பகிரவும்"
+                        )
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -56,14 +68,26 @@ class MainActivity : ComponentActivity() {
 private fun EzhuchiApp(onShare: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val clipboard = LocalClipboardManager.current
-    val prefs = remember { context.getSharedPreferences("ezhuchi_prefs", 0) }
+    val prefs = remember {
+        context.getSharedPreferences("ezhuchi_prefs", 0)
+    }
+
     val saved = remember {
         mutableStateListOf<String>().apply {
-            val arr = runCatching { JSONArray(prefs.getString("favorites", "[]")) }.getOrNull()
-            if (arr != null) for (i in 0 until arr.length()) add(arr.optString(i))
+            val arr = runCatching {
+                JSONArray(prefs.getString("favorites", "[]"))
+            }.getOrNull()
+            if (arr != null) {
+                for (i in 0 until arr.length()) add(arr.optString(i))
+            }
         }
     }
-    val categories = listOf("அனைத்தும்", "காதல்", "காதல் தோல்வி", "தன்னம்பிக்கை", "வாழ்க்கை", "பிடித்தவை")
+
+    val categories = listOf(
+        "அனைத்தும்", "காதல்", "காதல் தோல்வி",
+        "தன்னம்பிக்கை", "வாழ்க்கை", "பிடித்தவை"
+    )
+
     var selected by remember { mutableStateOf("அனைத்தும்") }
     var search by remember { mutableStateOf("") }
 
@@ -81,25 +105,52 @@ private fun EzhuchiApp(onShare: (String) -> Unit) {
                     title = {
                         Column {
                             Text("எழுச்சி மொழி", fontWeight = FontWeight.Bold)
-                            Text("Tamil Status & Quotes", style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                "Tamil Status & Quotes",
+                                style = MaterialTheme.typography.labelSmall
+                            )
                         }
                     }
                 )
             }
         ) { padding ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
             ) {
+                Button(
+                    onClick = {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://youtube.com/@ezhuchitamilpk")
+                        )
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("▶ Ezhuchi Tamil வீடியோக்கள்")
+                }
+
+                Spacer(Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = search,
                     onValueChange = { search = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("கவிதையைத் தேடு…") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    },
                     singleLine = true
                 )
+
                 Spacer(Modifier.height(10.dp))
-                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     items(categories) { category ->
                         FilterChip(
                             selected = selected == category,
@@ -108,52 +159,102 @@ private fun EzhuchiApp(onShare: (String) -> Unit) {
                         )
                     }
                 }
+
                 Spacer(Modifier.height(8.dp))
-                Text("${if (selected == "பிடித்தவை") saved.size else quoteList.count { (selected == "அனைத்தும்" || it.category == selected) && it.text.contains(search, ignoreCase = true) }} கவிதைகள்",
-                    style = MaterialTheme.typography.labelMedium)
+
+                val filtered = quoteList.filter {
+                    (selected == "அனைத்தும்" ||
+                        selected == "பிடித்தவை" ||
+                        it.category == selected) &&
+                        it.text.contains(search, ignoreCase = true) &&
+                        (selected != "பிடித்தவை" || saved.contains(it.text))
+                }
+
+                Text(
+                    "${filtered.size} கவிதைகள்",
+                    style = MaterialTheme.typography.labelMedium
+                )
+
                 Spacer(Modifier.height(6.dp))
+
                 LazyColumn(
+                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
-                    val filtered = quoteList.filter {
-                        (selected == "அனைத்தும்" || selected == "பிடித்தவை" || it.category == selected) &&
-                            it.text.contains(search, ignoreCase = true) &&
-                            (selected != "பிடித்தவை" || saved.contains(it.text))
-                    }
                     items(filtered, key = { it.text }) { quote ->
                         Card(
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(18.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
                         ) {
-                            Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(quote.category, style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary)
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    quote.category,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
                                 Spacer(Modifier.height(8.dp))
-                                Text(quote.text, style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Medium)
+
+                                Text(
+                                    quote.text,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+
                                 Spacer(Modifier.height(12.dp))
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.End
                                 ) {
-                                    IconButton(onClick = {
-                                        if (saved.contains(quote.text)) saved.remove(quote.text)
-                                        else saved.add(quote.text)
-                                        val arr = JSONArray()
-                                        saved.forEach { arr.put(it) }
-                                        prefs.edit().putString("favorites", arr.toString()).apply()
-                                    }) {
+                                    IconButton(
+                                        onClick = {
+                                            if (saved.contains(quote.text)) {
+                                                saved.remove(quote.text)
+                                            } else {
+                                                saved.add(quote.text)
+                                            }
+
+                                            val arr = JSONArray()
+                                            saved.forEach { arr.put(it) }
+                                            prefs.edit()
+                                                .putString("favorites", arr.toString())
+                                                .apply()
+                                        }
+                                    ) {
                                         Icon(
-                                            if (saved.contains(quote.text)) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                            if (saved.contains(quote.text))
+                                                Icons.Default.Favorite
+                                            else
+                                                Icons.Default.FavoriteBorder,
                                             contentDescription = "Favorite"
                                         )
                                     }
-                                    TextButton(onClick = {
-                                        clipboard.setText(AnnotatedString(quote.text))
-                                    }) { Text("நகலெடு") }
-                                    TextButton(onClick = { onShare(quote.text) }) { Text("பகிர்") }
+
+                                    TextButton(
+                                        onClick = {
+                                            clipboard.setText(
+                                                AnnotatedString(quote.text)
+                                            )
+                                        }
+                                    ) {
+                                        Text("நகலெடு")
+                                    }
+
+                                    TextButton(
+                                        onClick = { onShare(quote.text) }
+                                    ) {
+                                        Text("பகிர்")
+                                    }
                                 }
                             }
                         }
@@ -163,4 +264,3 @@ private fun EzhuchiApp(onShare: (String) -> Unit) {
         }
     }
 }
-
