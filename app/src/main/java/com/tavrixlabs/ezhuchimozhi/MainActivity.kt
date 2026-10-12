@@ -323,7 +323,7 @@ private fun EzhuchiApp(
                                         .padding(22.dp)
                                 ) {
                                     Text(
-                                        "🌱 இன்றைய நாள் உனக்கானது ✨",
+                                        "🌅 உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
                                         color = gold,
                                         style = MaterialTheme.typography.titleMedium
                                     )
