@@ -334,10 +334,7 @@ private fun EzhuchiApp(
                                         style = MaterialTheme.typography.headlineLarge,
                                         fontWeight = FontWeight.ExtraBold
                                     )
-                                    Text(
-                                        "உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
-                                        color = Color.White
-                                    )
+                                    
                                     Spacer(Modifier.height(16.dp))
                                     Button(
                                         onClick = onYouTube,
