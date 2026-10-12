@@ -93,10 +93,10 @@ private fun EzhuchiApp(onShare: (String) -> Unit) {
 
     MaterialTheme(
         colorScheme = lightColorScheme(
-            primary = androidx.compose.ui.graphics.Color(0xFF5B3A91),
-            secondary = androidx.compose.ui.graphics.Color(0xFFE6B65C),
-            background = androidx.compose.ui.graphics.Color(0xFFFFFBFF),
-            surface = androidx.compose.ui.graphics.Color(0xFFFFFBFF)
+            primary = androidx.compose.ui.graphics.Color(0xFF6C3483),
+secondary = androidx.compose.ui.graphics.Color(0xFFFFC857),
+background = androidx.compose.ui.graphics.Color(0xFFFFF8F0),
+surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
         )
     ) {
         Scaffold(
