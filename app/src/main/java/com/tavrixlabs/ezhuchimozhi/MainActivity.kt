@@ -184,12 +184,15 @@ surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
                 ) {
                     items(filtered, key = { it.text }) { quote ->
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
+    modifier = Modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(22.dp),
+    colors = CardDefaults.cardColors(
+        containerColor = androidx.compose.ui.graphics.Color(0xFFF0E5F5)
+    ),
+    elevation = CardDefaults.cardElevation(
+        defaultElevation = 3.dp
+    )
+) {
                             Column(
                                 Modifier
                                     .fillMaxWidth()
