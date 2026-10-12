@@ -47,8 +47,15 @@ private val deepPurple = Color(0xFF281B43)
 private val cream = Color(0xFFFFF7EF)
 private val gold = Color(0xFFFFD580)
 private val categories = listOf(
-    "அனைத்தும்", "காதல்", "காதல் தோல்வி",
-    "வாழ்க்கை", "தன்னம்பிக்கை"
+    "அனைத்தும்",
+    "காதல்",
+    "காதல் தோல்வி",
+    "வாழ்க்கை",
+    "தன்னம்பிக்கை",
+    "நட்பு",
+    "குடும்பம்",
+    "ஊக்கம்",
+    "தத்துவம்"
 )
 
 class MainActivity : ComponentActivity() {
