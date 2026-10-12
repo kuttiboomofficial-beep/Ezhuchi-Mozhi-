@@ -318,9 +318,7 @@ private fun EzhuchiApp(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(
-                                            Brush.linearGradient(
-                                                listOf(deepPurple, purple)
-                                            ),
+                                            Color.Transparent,
                                             RoundedCornerShape(26.dp)
                                         )
                                         .padding(22.dp)
