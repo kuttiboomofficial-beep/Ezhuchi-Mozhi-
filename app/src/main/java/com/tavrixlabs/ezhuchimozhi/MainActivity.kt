@@ -26,7 +26,8 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.json.JSONArray
+import org.json.ஜேசோனாற்றய்
+import androidx.compose.ui.draw.clip
 
 data class Quote(val text: String, val category: String)
 
