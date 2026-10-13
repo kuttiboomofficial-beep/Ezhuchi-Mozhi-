@@ -1,239 +1,213 @@
 package com.tavrixlabs.ezhuchimozhi
 
+import android.content.ClipData
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.json.ஜேசோனாற்றய்
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 
-data class Quote(val text: String, val category: String)
+private val Purple = Color(0xFF63347E)
+private val DeepPurple = Color(0xFF281843)
+private val Cream = Color(0xFFFFF7EF)
+private val Gold = Color(0xFFFFD580)
+private val Pink = Color(0xFFE84A83)
 
-private val quoteList = listOf(
-    Quote("உன்னை நேசிப்பது என் விருப்பம்… உன் நினைவில் வாழ்வது என் பழக்கம்.", "காதல்"),
-    Quote("சில மௌனங்கள் ஆயிரம் வார்த்தைகளைவிட வலிமையானவை.", "காதல் தோல்வி"),
-    Quote("விழுந்த இடம் முக்கியமில்லை; மீண்டும் எழும் துணிவுதான் முக்கியம்.", "தன்னம்பிக்கை"),
-    Quote("நேரம் எல்லாவற்றையும் மாற்றும்; பொறுமை நம்மை வலிமையாக்கும்.", "வாழ்க்கை"),
-    Quote("உண்மையான அன்பு உரிமை கேட்காது; மனதைப் புரிந்துகொள்ளும்.", "காதல்"),
-    Quote("உன்னை இழந்த வலி, உன்னை நீயே கண்டுபிடிக்க உதவட்டும்.", "காதல் தோல்வி"),
-    Quote("மெதுவாக சென்றாலும் பரவாயில்லை; நின்றுவிடாதே.", "தன்னம்பிக்கை"),
-    Quote("ஒவ்வொரு நாளும் ஒரு புதிய தொடக்கத்திற்கான வாய்ப்பு.", "வாழ்க்கை"),
-    Quote("சொல்லாத உணர்வுகளுக்கும் இதயத்தில் ஒரு மொழி உண்டு.", "காதல்"),
-    Quote("பிரிவு முடிவல்ல; சில நேரம் அது நம்மை நமக்கே திருப்பித் தரும்.", "காதல் தோல்வி"),
-    Quote("உன் முயற்சி அமைதியாக இருக்கட்டும்; வெற்றி பேசட்டும்.", "தன்னம்பிக்கை"),
-    Quote("சிறிய மகிழ்ச்சிகளையும் ரசிக்கத் தெரிந்தால் வாழ்க்கை அழகாகும்.", "வாழ்க்கை")
-) + extraQuotes
+private data class Quote(
+    val text: String,
+    val category: String
+)
 
-private val purple = Color(0xFF63347E)
-private val deepPurple = Color(0xFF281B43)
-private val cream = Color(0xFFFFF7EF)
-private val gold = Color(0xFFFFD580)
 private val categories = listOf(
-    "அனைத்தும்",
-    "காதல்",
-    "காதல் தோல்வி",
-    "வாழ்க்கை",
-    "தன்னம்பிக்கை",
-    "நட்பு",
-    "குடும்பம்",
-    "ஊக்கம்",
-    "தத்துவம்"
+    "அனைத்தும்", "காதல்", "காதல் தோல்வி", "வாழ்க்கை",
+    "தன்னம்பிக்கை", "நட்பு", "குடும்பம்", "ஊக்கம்", "தத்துவம்"
+)
+
+private val quotes = listOf(
+    Quote("உன்னை உண்மையாக நேசிப்பவர்கள், உன் மௌனத்தையும் புரிந்துகொள்வார்கள்.", "காதல்"),
+    Quote("நேசித்தவர் பிரிந்தாலும், நேசித்த நினைவுகள் பிரிவதில்லை.", "காதல் தோல்வி"),
+    Quote("விழுவது தோல்வியல்ல; விழுந்த இடத்தில் கிடப்பதுதான் தோல்வி.", "தன்னம்பிக்கை"),
+    Quote("வாழ்க்கை எப்போதும் எளிதல்ல; ஆனால் ஒவ்வொரு நாளும் ஒரு பாடம்.", "வாழ்க்கை"),
+    Quote("உன் கனவுகளைச் சிறியதாக நினைக்காதே; உன் முயற்சியைப் பெரிதாக்கு.", "ஊக்கம்"),
+    Quote("உண்மையான நட்பு தூரத்தால் குறைவதில்லை; காலத்தால் அழிவதில்லை.", "நட்பு"),
+    Quote("உலகம் மாறினாலும், உனக்காகக் காத்திருக்கும் அன்பு குடும்பம்.", "குடும்பம்"),
+    Quote("மௌனம் சில நேரங்களில் ஆயிரம் வார்த்தைகளைவிட வலிமையானது.", "தத்துவம்"),
+    Quote("உன் கண்ணீரை மறைத்தாலும், உன் மனதை உன்னால் ஏமாற்ற முடியாது.", "காதல் தோல்வி"),
+    Quote("மற்றவர்களுடன் போட்டி வேண்டாம்; நேற்றைய உன்னை விட இன்று உயர்ந்திரு.", "தன்னம்பிக்கை"),
+    Quote("சில பிரிவுகள் வலிக்கும்; ஆனால் அவை நம்மை நமக்கே அறிமுகப்படுத்தும்.", "வாழ்க்கை"),
+    Quote("நல்ல மனதைத் தேடாதே; முதலில் நீ நல்ல மனமாக இரு.", "தத்துவம்"),
+    Quote("உன் மதிப்பை அறிந்தவனிடம் உன்னை நிரூபிக்க வேண்டியதில்லை.", "தன்னம்பிக்கை"),
+    Quote("அன்பு என்பது அருகில் இருப்பதல்ல; தொலைவில் இருந்தும் துணையாக இருப்பது.", "காதல்"),
+    Quote("கடினமான நாட்கள் உன்னை உடைக்க வரவில்லை; உன்னை உருவாக்க வருகின்றன.", "ஊக்கம்"),
+    Quote("நண்பன் என்பவன் சிரிப்பில் உடன் இருப்பவன் மட்டும் அல்ல; கண்ணீரிலும் விலகாதவன்.", "நட்பு"),
+    Quote("வீடு என்பது சுவர் அல்ல; உன்னை ஏற்றுக்கொள்ளும் இதயங்கள்.", "குடும்பம்"),
+    Quote("காலம் பதில் சொல்லும்; அதுவரை பொறுமை உன் பலமாக இருக்கட்டும்.", "தத்துவம்"),
+    Quote("உன் பயம் சொல்வதைக் கேட்காதே; உன் கனவு சொல்வதைக் கேள்.", "ஊக்கம்"),
+    Quote("சில நினைவுகள் மறையாது; அவற்றுடன் வாழக் கற்றுக்கொள்கிறோம்.", "காதல் தோல்வி"),
+    Quote("உன்னை நீ நம்பும் நாள் முதல் உன் பயணம் மாறத் தொடங்கும்.", "தன்னம்பிக்கை"),
+    Quote("அன்பு கேட்டு வாங்குவது அல்ல; மனதாரக் கொடுக்கப்படுவது.", "காதல்"),
+    Quote("வெற்றி மெதுவாக வந்தாலும் பரவாயில்லை; முயற்சி நின்றுவிடக்கூடாது.", "ஊக்கம்"),
+    Quote("உண்மையான உறவுக்கு தினமும் விளக்கம் தேவையில்லை.", "குடும்பம்"),
+    Quote("மன அமைதியை இழந்து பெறும் வெற்றி, முழுமையான வெற்றியல்ல.", "வாழ்க்கை"),
+    Quote("உன் பாதை தனியாக இருந்தாலும், உன் இலக்கை மறந்துவிடாதே.", "ஊக்கம்"),
+    Quote("பேசும் வார்த்தையைவிட, காயப்படுத்தாத மனம் அழகானது.", "தத்துவம்"),
+    Quote("நல்ல நண்பர்கள் வாழ்க்கையின் அழகான வரம்.", "நட்பு"),
+    Quote("உன் முயற்சியை இன்று யாரும் பார்க்காமல் இருக்கலாம்; நாளை அதன் பலனைப் பார்ப்பார்கள்.", "தன்னம்பிக்கை"),
+    Quote("காதலில் தோற்றாலும், அன்பு காட்டிய உன் இதயம் தோற்றுவிடவில்லை.", "காதல் தோல்வி")
 )
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            EzhuchiApp(
-                onShare = { text ->
-                    startActivity(
-                        Intent.createChooser(
-                            Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, text)
-                            },
-                            "கவிதையை பகிரவும்"
-                        )
-                    )
-                },
-                onYouTube = {
-                    startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://youtube.com/@ezhuchitamilpk")
-                        )
-                    )
-                }
-            )
+            EzhuchiApp()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EzhuchiApp(
-    onShare: (String) -> Unit,
-    onYouTube: () -> Unit
-) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val clipboard = LocalClipboardManager.current
-
+private fun EzhuchiApp() {
+    val context = LocalContext.current
     val prefs = remember {
-        context.getSharedPreferences("ezhuchi_prefs", 0)
-    }
-
-    val saved = remember {
-        mutableStateListOf<String>().apply {
-            val arr = runCatching {
-                JSONArray(prefs.getString("favorites", "[]"))
-            }.getOrNull()
-
-            if (arr != null) {
-                for (i in 0 until arr.length()) {
-                    add(arr.optString(i))
-                }
-            }
-        }
+        context.getSharedPreferences("ezhuchi_settings", android.content.Context.MODE_PRIVATE)
     }
 
     var page by remember { mutableStateOf("Home") }
-    var selected by remember { mutableStateOf("அனைத்தும்") }
+    var selectedCategory by remember { mutableStateOf("அனைத்தும்") }
     var search by remember { mutableStateOf("") }
     var createText by remember { mutableStateOf("") }
+    var darkTheme by remember { mutableStateOf(false) }
+
+    val favorites = remember {
+        mutableStateListOf<String>().apply {
+            addAll(prefs.getStringSet("favorites", emptySet()) ?: emptySet())
+        }
+    }
+
+    val background = if (darkTheme) Color(0xFF17121D) else Cream
+    val cardColor = if (darkTheme) Color(0xFF2B2333) else Color.White
+    val textColor = if (darkTheme) Color.White else DeepPurple
+
+    fun toggleFavorite(text: String) {
+        if (favorites.contains(text)) {
+            favorites.remove(text)
+        } else {
+            favorites.add(text)
+        }
+        prefs.edit().putStringSet("favorites", favorites.toSet()).apply()
+    }
+
+    fun copyText(text: String) {
+        val clipboard =
+            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE)
+                    as android.content.ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("கவிதை", text))
+        android.widget.Toast.makeText(
+            context, "கவிதை நகலெடுக்கப்பட்டது", android.widget.Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    fun shareText(text: String) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, "$text\n\n— எழுச்சி மொழி")
+        }
+        context.startActivity(Intent.createChooser(intent, "கவிதையைப் பகிர்"))
+    }
 
     MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = purple,
-            secondary = gold,
-            background = cream,
-            surface = Color.White
-        )
+        colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()
     ) {
         Scaffold(
-            containerColor = cream,
+            containerColor = background,
             topBar = {
                 TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = cream
-                    ),
                     title = {
                         Column {
-                            Text(
-                                "எழுச்சி மொழி",
-                                fontWeight = FontWeight.ExtraBold
-                            )
+                            Text("எழுச்சி மொழி", fontWeight = FontWeight.Bold)
                             Text(
                                 "உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
-                                style = MaterialTheme.typography.labelSmall
+                                fontSize = 11.sp
                             )
                         }
                     },
                     actions = {
-                        TextButton(onClick = {
-                            page = "Settings"
-                        }) {
-                            Text("⚙️")
+                        TextButton(onClick = { page = "Settings" }) {
+                            Text("⚙️", fontSize = 22.sp)
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = background,
+                        titleContentColor = textColor
+                    )
                 )
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = Color.White
-                ) {
+                NavigationBar(containerColor = cardColor) {
                     val destinations = listOf(
-                        Triple("Home", "🏠", "Home"),
+                        Triple("Home", "⌂", "Home"),
                         Triple("Favorites", "♡", "Favorites"),
-                        Triple("Create", "✍️", "Create"),
-                        Triple("Premium", "👑", "Premium")
+                        Triple("Create", "✎", "Create"),
+                        Triple("Premium", "♛", "Premium")
                     )
 
-                    destinations.forEach { (name, symbol, label) ->
+                    destinations.forEach { (destination, symbol, label) ->
                         NavigationBarItem(
-                            selected = page == name,
-                            onClick = { page = name },
-                            icon = { Text(symbol) },
+                            selected = page == destination,
+                            onClick = { page = destination },
+                            icon = { Text(symbol, fontSize = 23.sp) },
                             label = { Text(label) }
                         )
                     }
                 }
             }
         ) { padding ->
-
             when (page) {
-                "Create" -> {
+                "Settings" -> {
                     Column(
                         Modifier
                             .fillMaxSize()
                             .padding(padding)
                             .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(18.dp)
                     ) {
-                        Text(
-                            "✍️ உன் கவிதையை உருவாக்கு",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        OutlinedTextField(
-                            value = createText,
-                            onValueChange = { createText = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            placeholder = {
-                                Text("உன் மனதில் உள்ளதை இங்கே எழுது...")
-                            },
-                            minLines = 6
-                        )
-
-                        Button(
-                            onClick = {
-                                if (createText.isNotBlank()) {
-                                    clipboard.setText(
-                                        AnnotatedString(createText)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = createText.isNotBlank()
+                        Text("அமைப்புகள்", fontSize = 24.sp, color = textColor)
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("📋 நகலெடு (Copy)")
+                            Text("Dark theme", color = textColor)
+                            Switch(
+                                checked = darkTheme,
+                                onCheckedChange = { darkTheme = it }
+                            )
                         }
-
-                        OutlinedButton(
-                            onClick = {
-                                if (createText.isNotBlank()) {
-                                    onShare(createText)
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = createText.isNotBlank()
-                        ) {
-                            Text("↗️ பகிர் (Share)")
+                        Text("எழுச்சி மொழி — Tamil Status & Quotes", color = textColor)
+                        Text(
+                            "கவிதைகளை நகலெடுத்து நண்பர்களுடன் பகிரலாம்.",
+                            color = textColor
+                        )
+                        Button(onClick = { page = "Home" }) {
+                            Text("முகப்புக்குத் திரும்பு")
                         }
                     }
                 }
@@ -243,62 +217,77 @@ private fun EzhuchiApp(
                         Modifier
                             .fillMaxSize()
                             .padding(padding)
-                            .padding(20.dp),
+                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text("👑", style = MaterialTheme.typography.displayLarge)
+                        Text("👑", fontSize = 54.sp)
                         Text(
                             "Ezhuchi Premium",
-                            style = MaterialTheme.typography.headlineMedium,
+                            fontSize = 26.sp,
+                            color = textColor,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "விளம்பரமில்லா அனுபவம், கூடுதல் வடிவமைப்புகள் " +
-                                "மற்றும் Status உருவாக்கும் வசதிகள் " +
-                                "எதிர்காலத்தில் இங்கே சேர்க்கப்படும்.",
-                            style = MaterialTheme.typography.bodyLarge
+                            "Premium வசதி விரைவில் அறிமுகமாகும்.",
+                            color = textColor,
+                            textAlign = TextAlign.Center
                         )
-                        Spacer(Modifier.height(12.dp))
-                        Text("Premium வாங்கும் வசதி இன்னும் இணைக்கப்படவில்லை.")
+                        Text(
+                            "இப்போது எந்த payment-மும் இணைக்கப்படவில்லை.",
+                            color = textColor,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
 
-                "Settings" -> {
+                "Create" -> {
                     Column(
                         Modifier
                             .fillMaxSize()
                             .padding(padding)
                             .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         Text(
-                            "⚙️ அமைப்புகள்",
-                            style = MaterialTheme.typography.headlineSmall,
+                            "உன் கவிதையை எழுது ✍️",
+                            fontSize = 24.sp,
+                            color = textColor,
                             fontWeight = FontWeight.Bold
                         )
-                        Text("எழுச்சி மொழி — Tamil Status & Quotes")
-                        Text("மொழித் தேர்வு அடுத்த கட்டத்தில் சேர்க்கப்படும்.")
-                        Text("தற்போதைய கவிதைகள்: ${quoteList.size}")
-                        TextButton(onClick = { page = "Home" }) {
-                            Text("முகப்புக்குத் திரும்பு")
+                        OutlinedTextField(
+                            value = createText,
+                            onValueChange = { createText = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            placeholder = { Text("உன் மனதில் இருப்பதை எழுது...") },
+                            minLines = 6
+                        )
+                        Button(
+                            onClick = { if (createText.isNotBlank()) copyText(createText) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("📋 நகலெடு")
+                        }
+                        OutlinedButton(
+                            onClick = { if (createText.isNotBlank()) shareText(createText) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("↗ பகிர்")
                         }
                     }
                 }
 
                 else -> {
-                    val filtered = quoteList.filter { quote ->
-                        val matchesPage =
-                            if (page == "Favorites") {
-                                saved.contains(quote.text)
-                            } else {
-                                selected == "அனைத்தும்" ||
-                                    quote.category == selected
-                            }
-
-                        matchesPage &&
-                            quote.text.contains(search, ignoreCase = true)
+                    val visibleQuotes = when (page) {
+                        "Favorites" -> quotes.filter { favorites.contains(it.text) }
+                        else -> quotes.filter { quote ->
+                            (selectedCategory == "அனைத்தும்" ||
+                                quote.category == selectedCategory) &&
+                                quote.text.contains(search, ignoreCase = true)
+                        }
                     }
 
                     LazyColumn(
@@ -316,197 +305,235 @@ private fun EzhuchiApp(
                         if (page == "Home") {
                             item {
                                 Column(
-    modifier = Modifier
-        .fillMaxWidth()
-        .background(
-            Brush.linearGradient(
-                colors = listOf(deepPurple, purple)
-            ),
-            RoundedCornerShape(26.dp)
-        )
-        .clip(RoundedCornerShape(26.dp))
-        .padding(22.dp)
-) {
-                                 
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            Brush.linearGradient(
+                                                listOf(DeepPurple, Purple, Color(0xFFB65D83))
+                                            ),
+                                            RoundedCornerShape(26.dp)
+                                        )
+                                        .padding(22.dp)
+                                ) {
                                     Text(
-                                        "🌅 உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
-                                        color = gold,
-                                        style = MaterialTheme.typography.titleMedium
+                                        "🌅 இன்றைய நாள் உனக்கானது ✨",
+                                        color = Gold,
+                                        fontSize = 15.sp
                                     )
                                     Spacer(Modifier.height(10.dp))
                                     Text(
                                         "எழுச்சி மொழி",
                                         color = Color.White,
-                                        style = MaterialTheme.typography.headlineLarge,
+                                        fontSize = 30.sp,
                                         fontWeight = FontWeight.ExtraBold
                                     )
-                                    
-                                    Spacer(Modifier.height(16.dp))
-                                    Button(
-                                        onClick = onYouTube,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = gold,
-                                            contentColor = deepPurple
-                                        )
-                                    ) {
-                                        Text("▶ Ezhuchi Tamil வீடியோக்கள்")
+                                    Text(
+                                        "உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
+                                        color = Color.White,
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(Modifier.height(14.dp))
+                                    Text(
+                                        "🌄 இயற்கை அழகுடன் உன் நாளைத் தொடங்கு",
+                                        color = Color.White
+                                    )
+                                }
+                            }
+
+                            item {
+                                OutlinedTextField(
+                                    value = search,
+                                    onValueChange = { search = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = { Text("🔍 கவிதையைத் தேடு...") },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(28.dp)
+                                )
+                            }
+
+                            item {
+                                Text(
+                                    "✨ இன்றைய கவிதை",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                            }
+
+                            item {
+                                QuoteCard(
+                                    quote = quotes.first(),
+                                    isFavorite = favorites.contains(quotes.first().text),
+                                    cardColor = Brush.linearGradient(
+                                        listOf(DeepPurple, Purple)
+                                    ),
+                                    textColor = Color.White,
+                                    onFavorite = { toggleFavorite(quotes.first().text) },
+                                    onCopy = { copyText(quotes.first().text) },
+                                    onShare = { shareText(quotes.first().text) }
+                                )
+                            }
+
+                            item {
+                                Text(
+                                    "▦ வகைகளைத் தேர்ந்தெடு",
+                                    fontSize = 21.sp,
+                                    color = textColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            item {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    categories.drop(1).chunked(2).forEach { pair ->
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            pair.forEach { category ->
+                                                Card(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .height(76.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = cardColor
+                                                    ),
+                                                    onClick = { selectedCategory = category }
+                                                ) {
+                                                    Box(
+                                                        Modifier
+                                                            .fillMaxSize()
+                                                            .padding(8.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            category,
+                                                            color = textColor,
+                                                            fontWeight = FontWeight.Bold,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            if (pair.size == 1) {
+                                                Spacer(Modifier.weight(1f))
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        } else {
+
+                            item {
+                                Text(
+                                    "🔥 பிரபலமான கவிதைகள்",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                            }
+                        }
+
+                        if (page == "Favorites") {
                             item {
                                 Text(
                                     "❤️ பிடித்த கவிதைகள்",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
                                 )
                             }
                         }
 
-                        item {
-                            OutlinedTextField(
-                                value = search,
-                                onValueChange = { search = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text("🔍 கவிதையைத் தேடு...")
-                                },
-                                singleLine = true
+                        items(visibleQuotes, key = { it.text }) { quote ->
+                            QuoteCard(
+                                quote = quote,
+                                isFavorite = favorites.contains(quote.text),
+                                cardColor = Brush.linearGradient(
+                                    listOf(cardColor, cardColor)
+                                ),
+                                textColor = textColor,
+                                onFavorite = { toggleFavorite(quote.text) },
+                                onCopy = { copyText(quote.text) },
+                                onShare = { shareText(quote.text) }
                             )
                         }
 
-                        if (page == "Home") {
+                        if (visibleQuotes.isEmpty()) {
                             item {
                                 Text(
-                                    "🗂️ வகைகளைத் தேர்ந்தெடு",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            item {
-                                Row(
-                                    modifier = Modifier.horizontalScroll(
-                                        rememberScrollState()
-                                    ),
-                                    horizontalArrangement =
-                                        Arrangement.spacedBy(8.dp)
-                                ) {
-                                    categories.forEach { category ->
-                                        FilterChip(
-                                            selected = selected == category,
-                                            onClick = { selected = category },
-                                            label = { Text(category) }
-                                        )
-                                    }
-                                }
-                            }
-
-                            item {
-                                Text(
-                                    "🔥 கவிதைகள்  ·  ${filtered.size}",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-
-                        if (filtered.isEmpty()) {
-                            item {
-                                Text(
-                                    if (page == "Favorites") {
-                                        "இன்னும் பிடித்த கவிதைகள் சேர்க்கப்படவில்லை."
-                                    } else {
-                                        "கவிதைகள் கிடைக்கவில்லை. வேறு சொல்லைத் தேடு."
-                                    },
+                                    if (page == "Favorites")
+                                        "இன்னும் பிடித்த கவிதைகள் சேமிக்கப்படவில்லை."
+                                    else
+                                        "கவிதைகள் கிடைக்கவில்லை. வேறு வார்த்தையைத் தேடு.",
+                                    color = textColor,
                                     modifier = Modifier.padding(16.dp)
                                 )
                             }
                         }
-
-                        items(filtered, key = { it.text }) { quote ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(22.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
-                                ),
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 3.dp
-                                )
-                            ) {
-                                Column(
-                                    Modifier.padding(18.dp)
-                                ) {
-                                    Text(
-                                        "✨ ${quote.category}",
-                                        color = purple,
-                                        fontWeight = FontWeight.Bold
-                                    )
-
-                                    Spacer(Modifier.height(12.dp))
-
-                                    Text(
-                                        quote.text,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Medium
-                                    )
-
-                                    Spacer(Modifier.height(12.dp))
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement =
-                                            Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        TextButton(
-                                            onClick = {
-                                                if (saved.contains(quote.text)) {
-                                                    saved.remove(quote.text)
-                                                } else {
-                                                    saved.add(quote.text)
-                                                }
-
-                                                val arr = JSONArray()
-                                                saved.forEach { arr.put(it) }
-                                                prefs.edit()
-                                                    .putString(
-                                                        "favorites",
-                                                        arr.toString()
-                                                    )
-                                                    .apply()
-                                            }
-                                        ) {
-                                            Text(
-                                                if (saved.contains(quote.text)) {
-                                                    "❤️ பிடித்தது"
-                                                } else {
-                                                    "♡ பிடித்தவை"
-                                                }
-                                            )
-                                        }
-
-                                        TextButton(
-                                            onClick = {
-                                                clipboard.setText(
-                                                    AnnotatedString(quote.text)
-                                                )
-                                            }
-                                        ) {
-                                            Text("📋 நகலெடு")
-                                        }
-
-                                        TextButton(
-                                            onClick = { onShare(quote.text) }
-                                        ) {
-                                            Text("↗️ பகிர்")
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuoteCard(
+    quote: Quote,
+    isFavorite: Boolean,
+    cardColor: Brush,
+    textColor: Color,
+    onFavorite: () -> Unit,
+    onCopy: () -> Unit,
+    onShare: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(cardColor)
+                .padding(18.dp)
+        ) {
+            Text(
+                "✨ ${quote.category}",
+                color = if (textColor == Color.White) Gold else Purple,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "“${quote.text}”",
+                color = textColor,
+                fontSize = 19.sp,
+                lineHeight = 29.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "— எழுச்சி மொழி",
+                color = textColor.copy(alpha = 0.75f),
+                fontSize = 14.sp
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(onClick = onFavorite) {
+                    Text(
+                        if (isFavorite) "❤️ பிடித்தது" else "♡ பிடித்தவை",
+                        color = if (textColor == Color.White) Color.White else Pink
+                    )
+                }
+                TextButton(onClick = onCopy) {
+                    Text("📋 நகலெடு", color = textColor)
+                }
+                TextButton(onClick = onShare) {
+                    Text("↗ பகிர்", color = textColor)
                 }
             }
         }
