@@ -30,10 +30,7 @@ private val Cream = Color(0xFFFFF7EF)
 private val Gold = Color(0xFFFFD580)
 private val Pink = Color(0xFFE84A83)
 
-private data class Quote(
-    val text: String,
-    val category: String
-)
+
 
 private val categories = listOf(
     "அனைத்தும்", "காதல்", "காதல் தோல்வி", "வாழ்க்கை",
