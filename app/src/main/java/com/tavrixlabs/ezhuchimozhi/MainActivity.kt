@@ -315,14 +315,18 @@ private fun EzhuchiApp(
                         if (page == "Home") {
                             item {
                                 Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            Color.Transparent,
-                                            RoundedCornerShape(26.dp)
-                                        )
-                                        .padding(22.dp)
-                                ) {
+    modifier = Modifier
+        .fillMaxWidth()
+        .background(
+            Brush.linearGradient(
+                colors = listOf(deepPurple, purple)
+            ),
+            RoundedCornerShape(26.dp)
+        )
+        .clip(RoundedCornerShape(26.dp))
+        .padding(22.dp)
+) {
+                                 
                                     Text(
                                         "🌅 உன் உணர்வுகளுக்கு ஓர் எழுத்து 💜",
                                         color = gold,
